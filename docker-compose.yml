@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: supermais
+      POSTGRES_USER: supermais
+      POSTGRES_PASSWORD: supermais123
+    ports:
+      - "5433:5432"
