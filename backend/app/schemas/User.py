@@ -1,13 +1,16 @@
 from pydantic import BaseModel
 
 class UserCreate(BaseModel):
-    username: str
-    email: str
-    password: str
+    id_unidade: int
+    nome: str
+    login: str
+    senha: str  
 
 class UserOut(UserCreate):
-    id: int
-    balance: float
+    id_usuario: int
+    id_unidade: int
+    nome: str
+    login: str
 
     class Config:
         from_attributes = True

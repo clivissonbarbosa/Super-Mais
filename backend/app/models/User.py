@@ -1,11 +1,12 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from app.database import Base
 
-class User(Base):
-    __tablename__ = "users"
+class Usuario(Base):
+    __tablename__ = "usuario"
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-    password = Column(String)
+    id_usuario = Column(Integer, primary_key=True, unique=True, index=True)
+    id_unidade = Column(Integer, ForeignKey("unidade.id_unidade"))
+    nome = Column(String, unique=True, index=True)
+    login = Column(String, unique=True, index=True)
+    senha_hash = Column(String, nullable=False)
     balance = Column(Float, default=0.0)
