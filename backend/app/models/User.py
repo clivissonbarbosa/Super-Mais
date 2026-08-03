@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from app.database import Base
 
 class Usuario(Base):
@@ -9,4 +9,6 @@ class Usuario(Base):
     nome = Column(String, unique=True, index=True)
     login = Column(String, unique=True, index=True)
     senha_hash = Column(String, nullable=False)
-    balance = Column(Float, default=0.0)
+    google_id = Column(String, unique=True, index=True, nullable=True)
+    foto_url = Column(String, nullable=True)
+    ativo = Column(Boolean, default=True)
