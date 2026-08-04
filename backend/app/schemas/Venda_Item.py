@@ -9,6 +9,7 @@ class vendaItemCreate(BaseModel):
 class VendaItemOut(BaseModel):
     id_item: int 
     id_venda: int 
+    id_produto: int
     quantidade: int
     preco_unitario: float
     
