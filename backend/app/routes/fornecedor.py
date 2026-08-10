@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.Fornecedor import Fornecedor
 from app.schemas.Fornecedor import FornecedorCreate, FornecedorOut
+from backend.app.core.security import get_current_user
 
-router = APIRouter(prefix="/fornecedores", tags=["Fornecedores"])
+router = APIRouter(prefix="/fornecedores", tags=["Fornecedores"], dependencies=[Depends(get_current_user)])
 
 @router.post("/", response_model=FornecedorOut)
 def criar_fornecedor(fornecedor: FornecedorCreate, db: Session = Depends(get_db)):

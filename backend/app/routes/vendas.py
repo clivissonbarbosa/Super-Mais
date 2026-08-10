@@ -5,9 +5,10 @@ from app.database import get_db
 from app.schemas.Vendas import VendaCreate, VendaOut
 from app.services import venda_service
 from app.services.financeiro_exceptions import RegraNegocioFinanceira
+from backend.app.core.security import get_current_user
 
 
-router = APIRouter(prefix="/vendas", tags=["Vendas"])
+router = APIRouter(prefix="/vendas", tags=["Vendas"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("/", response_model=VendaOut, status_code=status.HTTP_201_CREATED)

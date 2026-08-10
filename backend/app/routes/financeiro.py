@@ -10,9 +10,10 @@ from app.schemas.Conta_Receber import ContaReceberCreate, ContaReceberOut, Conta
 from app.schemas.Fluxo_Caixa import FluxoCaixaOut, ResumoFinanceiroOut
 from app.services import conta_pagar, conta_receber, fluxo_caixa_service
 from app.services.financeiro_exceptions import RegraNegocioFinanceira
+from backend.app.core.security import get_current_user
 
 
-router = APIRouter(prefix="/financeiro", tags=["Financeiro"])
+router = APIRouter(prefix="/financeiro", tags=["Financeiro"], dependencies=[Depends(get_current_user)])
 StatusPagamento = Literal["pendente", "pago", "cancelado"]
 
 

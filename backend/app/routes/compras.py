@@ -6,9 +6,10 @@ from app.schemas.Nota_Fiscal import NotaFiscalCreate, NotaFiscalOut
 from app.schemas.Pedido_Compra import PedidoCompraCreate, PedidoCompraOut, PedidoStatusUpdate
 from app.services import nota_fiscal, pedido_compra
 from app.services.financeiro_exceptions import RegraNegocioFinanceira
+from backend.app.core.security import get_current_user
 
 
-router = APIRouter(prefix="/compras", tags=["Compras"])
+router = APIRouter(prefix="/compras", tags=["Compras"], dependencies=[Depends(get_current_user)])
 
 
 def _conflito(erro: RegraNegocioFinanceira) -> HTTPException:

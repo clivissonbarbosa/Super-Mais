@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.Cliente import Cliente
 from app.schemas.Cliente import ClienteCreate, ClienteOut
+from backend.app.core.security import get_current_user
 
-router = APIRouter(prefix="/clientes", tags=["Clientes"])
+router = APIRouter(prefix="/clientes", tags=["Clientes"], dependencies=[Depends(get_current_user)])
 
 @router.post("/", response_model=ClienteOut)
 def criar_cliente(cliente: ClienteCreate, db: Session = Depends(get_db)):
