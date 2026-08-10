@@ -3,10 +3,11 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.produto import Produto
 from app.schemas.produto import ProdutoCreate, ProdutoOut
+from app.core.security import get_current_user
+from app.models.User import Usuario
+router = APIRouter(prefix="/produtos", tags=["Produtos"],dependencies=[Depends(get_current_user)])
 
-
-router = APIRouter(prefix="/produtos", tags=["Produtos"])
-
+print("Usuário atual: {}", )
 @router.post("/", response_model=ProdutoOut)
 def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):
     novo = Produto(**produto.dict())
