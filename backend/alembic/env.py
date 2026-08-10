@@ -18,6 +18,13 @@ from app.models.produto import Produto
 from app.models.Unidade import Unidade
 from app.models.Cliente import Cliente
 from app.models.Vendas import Venda
+from app.models.Fornecedor import Fornecedor
+from app.models.Pedido_Compra import PedidoCompra
+from app.models.Nota_Fiscal import NotaFiscal
+from app.models.Venda_Item import VendaItem
+from app.models.Conta_Pagar import ContaPagar
+from app.models.Conta_Receber import ContaReceber
+from app.models.Fluxo_Caixa import FluxoCaixa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
