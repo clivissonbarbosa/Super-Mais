@@ -8,9 +8,18 @@ class ApiError(RuntimeError):
 
 
 class ApiClient:
-    def __init__(self, base_url: str, timeout: int = 10):
+    def __init__(
+        self,
+        base_url: str,
+        timeout: int = 10,
+        access_token: str | None = None,
+    ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self.access_token = access_token
+
+    def set_token(self, access_token: str | None) -> None:
+        self.access_token = access_token
 
     def request(
         self,
@@ -19,13 +28,21 @@ class ApiClient:
         *,
         params: dict[str, Any] | None = None,
         json: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        authenticated: bool = True,
     ) -> Any:
+        headers: dict[str, str] = {}
+        if authenticated and self.access_token:
+            headers["Authorization"] = f"Bearer {self.access_token}"
+
         try:
             response = requests.request(
                 method,
                 f"{self.base_url}{path}",
                 params=params,
                 json=json,
+                data=data,
+                headers=headers or None,
                 timeout=self.timeout,
             )
         except requests.RequestException as erro:
@@ -49,6 +66,37 @@ class ApiClient:
 
     def post(self, path: str, json: dict[str, Any] | None = None) -> Any:
         return self.request("POST", path, json=json)
+
+    def login(self, username: str, password: str) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            "/users/login",
+            data={"username": username, "password": password},
+            authenticated=False,
+        )
+
+    def register_user(
+        self,
+        *,
+        nome: str,
+        login: str,
+        senha: str,
+        id_unidade: int,
+    ) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            "/users/",
+            json={
+                "nome": nome,
+                "login": login,
+                "senha": senha,
+                "id_unidade": id_unidade,
+            },
+            authenticated=False,
+        )
+
+    def get_me(self) -> dict[str, Any]:
+        return self.get("/users/me")
 
     def patch(self, path: str, json: dict[str, Any]) -> Any:
         return self.request("PATCH", path, json=json)

@@ -5,7 +5,8 @@ Interface Streamlit simples para consumir a API da SuperMais. As telas disponív
 - visão geral financeira;
 - contas a pagar e confirmação de pagamento;
 - contas a receber e confirmação de recebimento;
-- cadastro de fornecedor, pedido de compra e nota fiscal.
+- cadastro de fornecedor, pedido de compra e nota fiscal;
+- cadastro de categoria e produto.
 
 ## Executar
 
@@ -19,4 +20,4 @@ python -m streamlit run frontend/app.py
 
 A interface fica disponível em `http://localhost:8501`. Por padrão ela acessa a API em `http://127.0.0.1:8000`; o endereço pode ser alterado na barra lateral ou pela variável `SUPERMAIS_API_URL`.
 
-O módulo de vendas será adicionado depois da integração com a autenticação, para que o usuário da operação venha da sessão autenticada.
+Na barra lateral de autenticação você pode escolher entre `Entrar` e `Cadastrar`. O cadastro cria usuário via `POST /users/` (campos: nome, login, senha e ID da unidade). Depois disso, faça login normalmente; o frontend chama `POST /users/login`, recebe o token JWT e envia `Authorization: Bearer <token>` nas chamadas autenticadas.

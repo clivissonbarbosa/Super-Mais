@@ -1,8 +1,15 @@
 import os
+import sys
 from datetime import date, datetime, time
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+
+# Garante que o import use o api_client local desta pasta.
+CURRENT_DIR = Path(__file__).resolve().parent
+if str(CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_DIR))
 
 from api_client import ApiClient, ApiError
 
@@ -340,27 +347,244 @@ def pagina_compras(api: ApiClient) -> None:
                         st.error(str(erro))
 
 
+def pagina_produtos(api: ApiClient) -> None:
+    st.title("Produtos")
+    st.markdown(
+        '<p class="app-subtitle">Cadastre categorias e produtos para vendas e estoque.</p>',
+        unsafe_allow_html=True,
+    )
+
+    aba_categoria, aba_produto = st.tabs(["Categoria", "Produto"])
+
+    with aba_categoria:
+        st.subheader("Cadastrar categoria")
+        with st.form("form_categoria", clear_on_submit=True):
+            nome_categoria = st.text_input("Nome da categoria")
+            margem_lucro = st.number_input(
+                "Margem de lucro (%)",
+                min_value=0.0,
+                value=20.0,
+                step=0.5,
+                format="%.2f",
+            )
+            salvar_categoria = st.form_submit_button(
+                "Cadastrar categoria", type="primary"
+            )
+
+        if salvar_categoria:
+            if not nome_categoria.strip():
+                st.warning("Informe o nome da categoria.")
+            else:
+                try:
+                    categoria = api.post(
+                        "/categoria/",
+                        {
+                            "nome": nome_categoria.strip(),
+                            "margem_lucro": float(margem_lucro),
+                        },
+                    )
+                    st.success(
+                        f"Categoria cadastrada com sucesso. ID: {categoria['id_categoria']}"
+                    )
+                except ApiError as erro:
+                    st.error(str(erro))
+
+    with aba_produto:
+        st.subheader("Cadastrar produto")
+        with st.form("form_produto", clear_on_submit=True):
+            nome_produto = st.text_input("Nome do produto")
+            id_categoria = st.number_input(
+                "ID da categoria",
+                min_value=1,
+                value=1,
+                step=1,
+                help="Use o ID retornado ao cadastrar a categoria.",
+            )
+            codigo_barras = st.text_input("Código de barras")
+            preco_venda = st.number_input(
+                "Preço de venda",
+                min_value=0.01,
+                value=1.0,
+                step=0.01,
+                format="%.2f",
+            )
+            salvar_produto = st.form_submit_button("Cadastrar produto", type="primary")
+
+        if salvar_produto:
+            if not nome_produto.strip() or not codigo_barras.strip():
+                st.warning("Preencha nome do produto e código de barras.")
+            else:
+                try:
+                    api.post(
+                        "/produtos/",
+                        {
+                            "nome": nome_produto.strip(),
+                            "id_categoria": int(id_categoria),
+                            "codigo_barras": codigo_barras.strip(),
+                            "preco_venda": float(preco_venda),
+                        },
+                    )
+                    st.success("Produto cadastrado com sucesso.")
+                    st.rerun()
+                except ApiError as erro:
+                    st.error(str(erro))
+
+        st.subheader("Produtos cadastrados")
+        try:
+            produtos = api.get("/produtos/")
+        except ApiError as erro:
+            st.error(str(erro))
+            return
+
+        tabela = preparar_tabela(
+            produtos,
+            {
+                "id_produto": "ID",
+                "nome": "Nome",
+                "id_categoria": "Categoria",
+                "codigo_barras": "Código de barras",
+                "preco_venda": "Valor",
+            },
+        )
+        if tabela.empty:
+            st.info("Nenhum produto cadastrado ainda.")
+        else:
+            st.dataframe(tabela, use_container_width=True, hide_index=True)
+
+
+def garantir_estado_autenticacao() -> None:
+    if "access_token" not in st.session_state:
+        st.session_state.access_token = None
+    if "usuario_logado" not in st.session_state:
+        st.session_state.usuario_logado = None
+
+
+def validar_sessao_ativa(api: ApiClient) -> None:
+    if not st.session_state.access_token:
+        return
+    try:
+        st.session_state.usuario_logado = api.get_me()
+    except ApiError:
+        st.session_state.access_token = None
+        st.session_state.usuario_logado = None
+        st.warning("Sessão expirada. Faça login novamente.")
+        st.rerun()
+
+
+def renderizar_form_login(api: ApiClient) -> bool:
+    with st.sidebar.form("form_login"):
+        login = st.text_input("Login")
+        senha = st.text_input("Senha", type="password")
+        entrar = st.form_submit_button("Entrar", type="primary", use_container_width=True)
+
+    if not entrar:
+        return False
+
+    if not login.strip() or not senha:
+        st.sidebar.warning("Informe login e senha.")
+        return False
+
+    try:
+        resposta = api.login(login.strip(), senha)
+        st.session_state.access_token = resposta["access_token"]
+        st.success("Login realizado com sucesso.")
+        st.rerun()
+    except ApiError as erro:
+        st.sidebar.error(str(erro))
+    return False
+
+
+def renderizar_form_cadastro(api: ApiClient) -> bool:
+    with st.sidebar.form("form_cadastro"):
+        nome = st.text_input("Nome")
+        login = st.text_input("Login para acesso")
+        senha = st.text_input("Senha", type="password")
+        confirmar_senha = st.text_input("Confirmar senha", type="password")
+        id_unidade = st.number_input("ID da unidade", min_value=1, value=1, step=1)
+        cadastrar = st.form_submit_button(
+            "Cadastrar", type="primary", use_container_width=True
+        )
+
+    if not cadastrar:
+        return False
+
+    if not nome.strip() or not login.strip() or not senha:
+        st.sidebar.warning("Preencha nome, login e senha.")
+        return False
+
+    if senha != confirmar_senha:
+        st.sidebar.warning("A confirmação de senha não confere.")
+        return False
+
+    try:
+        api.register_user(
+            nome=nome.strip(),
+            login=login.strip(),
+            senha=senha,
+            id_unidade=int(id_unidade),
+        )
+        st.sidebar.success("Usuário cadastrado. Agora faça login.")
+    except ApiError as erro:
+        st.sidebar.error(str(erro))
+    return False
+
+
+def renderizar_usuario_logado() -> None:
+    usuario = st.session_state.usuario_logado or {}
+    nome_usuario = usuario.get("nome") or usuario.get("login") or "Usuário"
+    st.sidebar.success(f"Conectado como {nome_usuario}")
+    if st.sidebar.button("Sair", use_container_width=True):
+        st.session_state.access_token = None
+        st.session_state.usuario_logado = None
+        st.rerun()
+
+
+def exibir_autenticacao(api_url: str) -> ApiClient | None:
+    st.sidebar.subheader("Autenticação")
+    api = ApiClient(api_url, access_token=st.session_state.access_token)
+
+    validar_sessao_ativa(api)
+
+    if not st.session_state.access_token:
+        acao = st.sidebar.radio("Acesso", ["Entrar", "Cadastrar"], key="acao_auth")
+        if acao == "Entrar":
+            renderizar_form_login(api)
+        else:
+            renderizar_form_cadastro(api)
+
+        st.info("Faça login para acessar os módulos financeiros.")
+        return None
+
+    renderizar_usuario_logado()
+
+    return ApiClient(api_url, access_token=st.session_state.access_token)
+
+
 def main() -> None:
+    garantir_estado_autenticacao()
     st.sidebar.title("SuperMais")
     st.sidebar.caption("Módulo financeiro")
     url_padrao = os.getenv("SUPERMAIS_API_URL", "http://127.0.0.1:8000")
     api_url = st.sidebar.text_input("Endereço da API", value=url_padrao)
+    api = exibir_autenticacao(api_url)
+    if not api:
+        return
+
     pagina = st.sidebar.radio(
         "Navegação",
-        ["Visão geral", "Contas a pagar", "Contas a receber", "Compras"],
+        ["Visão geral", "Contas a pagar", "Contas a receber", "Compras", "Produtos"],
     )
-    st.sidebar.divider()
-    st.sidebar.info("Autenticação e vendas serão integradas após o merge do módulo de login.")
 
-    api = ApiClient(api_url)
     if pagina == "Visão geral":
         pagina_visao_geral(api)
     elif pagina == "Contas a pagar":
         pagina_contas(api, "pagar")
     elif pagina == "Contas a receber":
         pagina_contas(api, "receber")
-    else:
+    elif pagina == "Compras":
         pagina_compras(api)
+    else:
+        pagina_produtos(api)
 
 
 if __name__ == "__main__":
