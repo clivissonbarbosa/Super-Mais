@@ -7,6 +7,5 @@ backend/venv/
 backend/venv312/
 backend/venv*/
 .streamlit/secrets.toml
-backend/.streamlit/secrets.toml
 
 .vscode/
