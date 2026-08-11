@@ -6,10 +6,12 @@ from app.models import (
     Cliente,
     Conta_Pagar,
     Conta_Receber,
+    Estoque,
     Fluxo_Caixa,
     Fornecedor,
     Nota_Fiscal,
     Pedido_Compra,
+    Pedido_Compra_Item,
     Unidade,
     User,
     Vendas,
@@ -26,6 +28,7 @@ from app.routes import unidade as unidade_router
 from app.routes import cliente as cliente_router
 from app.routes import compras as compras_router
 from app.routes import financeiro as financeiro_router
+from app.routes import estoque as estoque_router
 app = FastAPI()
 
 #Base.metadata.create_all(bind=engine)
@@ -39,6 +42,7 @@ app.include_router(unidade_router.router)
 app.include_router(cliente_router.router)
 app.include_router(compras_router.router)
 app.include_router(financeiro_router.router)
+app.include_router(estoque_router.router)
 @app.get("/")
 def home():
     return {"status": "funcionando"}

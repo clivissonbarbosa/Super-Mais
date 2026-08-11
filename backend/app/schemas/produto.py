@@ -1,15 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class ProdutoCreate(BaseModel):
-    nome: str
-    id_categoria: int
-    codigo_barras: str
-    preco_venda: float
+    nome: str = Field(min_length=1, max_length=160)
+    id_categoria: int = Field(gt=0)
+    codigo_barras: str = Field(min_length=1, max_length=80)
+    preco_venda: float = Field(gt=0)
+
 
 class ProdutoOut(ProdutoCreate):
     id_produto: int
-    nome: str
-    id_categoria: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

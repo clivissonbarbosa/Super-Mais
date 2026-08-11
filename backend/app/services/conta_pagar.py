@@ -90,7 +90,9 @@ def atualizar_conta_pagar(
     return conta
 
 
-def dar_baixa(db: Session, id_conta_pagar: int) -> ContaPagar | None:
+def dar_baixa(
+    db: Session, id_conta_pagar: int, *, id_usuario: int | None = None
+) -> ContaPagar | None:
     """Confirma o pagamento e grava a saída na mesma transação."""
     conta = (
         db.query(ContaPagar)
@@ -113,6 +115,7 @@ def dar_baixa(db: Session, id_conta_pagar: int) -> ContaPagar | None:
             id_conta_receber=None,
             tipo_lancamento="saida",
             valor=conta.valor,
+            id_usuario=id_usuario,
             commit=False,
         )
         db.commit()

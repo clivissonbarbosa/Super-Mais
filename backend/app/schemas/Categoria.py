@@ -1,14 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class CategoriaCreate(BaseModel):
-   nome: str
-   margem_lucro: float
+    nome: str = Field(min_length=1, max_length=120)
+    margem_lucro: float = Field(ge=0)
 
-class CategoriaOut(BaseModel):
+
+class CategoriaOut(CategoriaCreate):
     id_categoria: int
-    nome: str
-    margem_lucro: float
 
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

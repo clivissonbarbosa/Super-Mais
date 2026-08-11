@@ -75,13 +75,21 @@ class ApiClient:
             authenticated=False,
         )
 
+    def login_google(self, id_token: str) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            "/users/google",
+            json={"id_token": id_token},
+            authenticated=False,
+        )
+
     def register_user(
         self,
         *,
         nome: str,
         login: str,
         senha: str,
-        id_unidade: int,
+        id_unidade: int | None = None,
     ) -> dict[str, Any]:
         return self.request(
             "POST",
@@ -100,3 +108,9 @@ class ApiClient:
 
     def patch(self, path: str, json: dict[str, Any]) -> Any:
         return self.request("PATCH", path, json=json)
+
+    def put(self, path: str, json: dict[str, Any]) -> Any:
+        return self.request("PUT", path, json=json)
+
+    def delete(self, path: str) -> Any:
+        return self.request("DELETE", path)

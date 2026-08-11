@@ -10,7 +10,8 @@ from app.schemas.Conta_Receber import ContaReceberCreate, ContaReceberOut, Conta
 from app.schemas.Fluxo_Caixa import FluxoCaixaOut, ResumoFinanceiroOut
 from app.services import conta_pagar, conta_receber, fluxo_caixa_service
 from app.services.financeiro_exceptions import RegraNegocioFinanceira
-from backend.app.core.security import get_current_user
+from app.core.security import get_current_user
+from app.models.User import Usuario
 
 
 router = APIRouter(prefix="/financeiro", tags=["Financeiro"], dependencies=[Depends(get_current_user)])
@@ -73,9 +74,15 @@ def atualizar_conta_pagar(
 
 
 @router.post("/contas-pagar/{id_conta}/baixa", response_model=ContaPagarOut)
-def baixar_conta_pagar(id_conta: int, db: Session = Depends(get_db)):
+def baixar_conta_pagar(
+    id_conta: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+):
     try:
-        conta = conta_pagar.dar_baixa(db, id_conta)
+        conta = conta_pagar.dar_baixa(
+            db, id_conta, id_usuario=current_user.id_usuario
+        )
     except RegraNegocioFinanceira as erro:
         raise _conflito_regra_negocio(erro) from erro
     if not conta:
@@ -146,9 +153,15 @@ def atualizar_conta_receber(
 
 
 @router.post("/contas-receber/{id_conta}/baixa", response_model=ContaReceberOut)
-def baixar_conta_receber(id_conta: int, db: Session = Depends(get_db)):
+def baixar_conta_receber(
+    id_conta: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+):
     try:
-        conta = conta_receber.dar_baixa(db, id_conta)
+        conta = conta_receber.dar_baixa(
+            db, id_conta, id_usuario=current_user.id_usuario
+        )
     except RegraNegocioFinanceira as erro:
         raise _conflito_regra_negocio(erro) from erro
     if not conta:

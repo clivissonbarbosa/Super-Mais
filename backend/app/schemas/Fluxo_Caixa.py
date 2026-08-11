@@ -11,6 +11,7 @@ class FluxoCaixaOut(BaseModel):
     id_lancamento: int
     id_conta_pagar: int | None
     id_conta_receber: int | None
+    id_usuario: int | None = None
     tipo_lancamento: TipoLancamento
     valor: float
     data_confirmacao: datetime

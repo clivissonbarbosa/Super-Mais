@@ -21,6 +21,7 @@ def registrar_lancamento(
     id_conta_receber: int | None,
     tipo_lancamento: str,
     valor: float,
+    id_usuario: int | None = None,
     commit: bool = True,
 ) -> FluxoCaixa:
     """Registra um evento imutável de caixa vinculado a exatamente uma conta."""
@@ -48,6 +49,7 @@ def registrar_lancamento(
         id_conta_receber=id_conta_receber,
         tipo_lancamento=tipo_lancamento,
         valor=valor,
+        id_usuario=id_usuario,
         data_confirmacao=agora_utc(),
     )
     db.add(lancamento)

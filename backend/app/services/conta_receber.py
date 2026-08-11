@@ -94,7 +94,9 @@ def atualizar_conta_receber(
     return conta
 
 
-def dar_baixa(db: Session, id_conta_receber: int) -> ContaReceber | None:
+def dar_baixa(
+    db: Session, id_conta_receber: int, *, id_usuario: int | None = None
+) -> ContaReceber | None:
     """Confirma o recebimento e grava a entrada na mesma transação."""
     conta = (
         db.query(ContaReceber)
@@ -117,6 +119,7 @@ def dar_baixa(db: Session, id_conta_receber: int) -> ContaReceber | None:
             id_conta_receber=conta.id_conta_receber,
             tipo_lancamento="entrada",
             valor=conta.valor,
+            id_usuario=id_usuario,
             commit=False,
         )
         db.commit()

@@ -7,7 +7,9 @@ from alembic import context
 
 import sys
 import os
+from dotenv import load_dotenv
 sys.path.append(os.getcwd())
+load_dotenv()
 
 # Import your Base and ALL your models here
 from app.database import Base
@@ -20,15 +22,19 @@ from app.models.Cliente import Cliente
 from app.models.Vendas import Venda
 from app.models.Fornecedor import Fornecedor
 from app.models.Pedido_Compra import PedidoCompra
+from app.models.Pedido_Compra_Item import PedidoCompraItem
 from app.models.Nota_Fiscal import NotaFiscal
 from app.models.Venda_Item import VendaItem
 from app.models.Conta_Pagar import ContaPagar
 from app.models.Conta_Receber import ContaReceber
 from app.models.Fluxo_Caixa import FluxoCaixa
+from app.models.Estoque import EstoqueMovimentacao, EstoqueSaldo
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+if os.getenv("DATABASE_URL"):
+    config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

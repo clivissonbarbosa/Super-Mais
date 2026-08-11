@@ -15,4 +15,8 @@ class Venda(Base):
     valor_total = Column(Float)
     forma_pagamento = Column(String)
 
-    #itens = relationship("VendaItem", back_populates="venda")
+    itens = relationship(
+        "VendaItem",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )

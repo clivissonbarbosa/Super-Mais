@@ -6,7 +6,8 @@ from app.schemas.Nota_Fiscal import NotaFiscalCreate, NotaFiscalOut
 from app.schemas.Pedido_Compra import PedidoCompraCreate, PedidoCompraOut, PedidoStatusUpdate
 from app.services import nota_fiscal, pedido_compra
 from app.services.financeiro_exceptions import RegraNegocioFinanceira
-from backend.app.core.security import get_current_user
+from app.core.security import get_current_user
+from app.models.User import Usuario
 
 
 router = APIRouter(prefix="/compras", tags=["Compras"], dependencies=[Depends(get_current_user)])
@@ -17,9 +18,15 @@ def _conflito(erro: RegraNegocioFinanceira) -> HTTPException:
 
 
 @router.post("/pedidos", response_model=PedidoCompraOut, status_code=status.HTTP_201_CREATED)
-def criar_pedido(dados: PedidoCompraCreate, db: Session = Depends(get_db)):
+def criar_pedido(
+    dados: PedidoCompraCreate,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+):
     try:
-        return pedido_compra.criar_pedido_compra(db, dados)
+        return pedido_compra.criar_pedido_compra(
+            db, dados, id_usuario=current_user.id_usuario
+        )
     except RegraNegocioFinanceira as erro:
         raise _conflito(erro) from erro
 
@@ -46,10 +53,24 @@ def atualizar_status_pedido(
     return pedido
 
 
+@router.get("/pedidos/{id_pedido}", response_model=PedidoCompraOut)
+def buscar_pedido(id_pedido: int, db: Session = Depends(get_db)):
+    pedido = pedido_compra.buscar_pedido(db, id_pedido)
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido de compra não encontrado.")
+    return pedido
+
+
 @router.post("/notas-fiscais", response_model=NotaFiscalOut, status_code=status.HTTP_201_CREATED)
-def emitir_nota_fiscal(dados: NotaFiscalCreate, db: Session = Depends(get_db)):
+def emitir_nota_fiscal(
+    dados: NotaFiscalCreate,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+):
     try:
-        return nota_fiscal.criar_nota_fiscal(db, dados)
+        return nota_fiscal.criar_nota_fiscal(
+            db, dados, id_usuario=current_user.id_usuario
+        )
     except RegraNegocioFinanceira as erro:
         raise _conflito(erro) from erro
 

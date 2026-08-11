@@ -11,4 +11,4 @@ class Usuario(Base):
     senha_hash = Column(String, nullable=False)
     google_id = Column(String, unique=True, index=True, nullable=True)
     foto_url = Column(String, nullable=True)
-    ativo = Column(Boolean, default=True)
+    ativo = Column(Boolean, nullable=False, default=True, server_default="true")

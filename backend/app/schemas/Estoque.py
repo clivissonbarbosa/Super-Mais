@@ -1,58 +1,39 @@
 from datetime import datetime
-from enum import Enum
-from pydantic import BaseModel, ConfigDict
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class TipoMovimento(str, Enum):
-    ENTRADA = "Entrada"
-    SAIDA = "Saída"
-    PERDA = "Perda"
+TipoMovimento = Literal["entrada", "saida", "perda"]
 
 
-# =========================
-# ESTOQUE SALDO
-# =========================
-
-class EstoqueSaldoBase(BaseModel):
+class EstoqueSaldoOut(BaseModel):
+    id_saldo: int
     id_produto: int
     id_unidade: int
-    quantidade_atual: int = 0
-    estoque_minimo: int = 0
-
-
-class EstoqueSaldoCreate(EstoqueSaldoBase):
-    pass
-
-
-class EstoqueSaldoUpdate(BaseModel):
-    quantidade_atual: int | None = None
-    estoque_minimo: int | None = None
-
-
-class EstoqueSaldoOut(EstoqueSaldoBase):
-    id_saldo: int
+    quantidade_atual: int
+    estoque_minimo: int
 
     model_config = ConfigDict(from_attributes=True)
 
 
-# =========================
-# ESTOQUE MOVIMENTAÇÃO
-# =========================
+class EstoqueMinimoUpdate(BaseModel):
+    estoque_minimo: int = Field(ge=0)
 
-class EstoqueMovimentacaoBase(BaseModel):
-    id_produto: int
-    id_unidade: int
+
+class EstoqueMovimentacaoCreate(BaseModel):
+    id_produto: int = Field(gt=0)
+    id_unidade: int = Field(gt=0)
     tipo_movimento: TipoMovimento
-    quantidade: int
-    motivo: str | None = None
+    quantidade: int = Field(gt=0)
+    motivo: str | None = Field(default=None, max_length=255)
 
 
-class EstoqueMovimentacaoCreate(EstoqueMovimentacaoBase):
-    pass
-
-
-class EstoqueMovimentacaoOut(EstoqueMovimentacaoBase):
+class EstoqueMovimentacaoOut(EstoqueMovimentacaoCreate):
     id_movimentacao: int
+    id_usuario: int | None = None
     data_movimentacao: datetime
+    referencia_tipo: str | None = None
+    referencia_id: int | None = None
 
     model_config = ConfigDict(from_attributes=True)

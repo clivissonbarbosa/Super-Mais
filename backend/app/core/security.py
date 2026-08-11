@@ -47,6 +47,8 @@ def authenticate_user(db: Session, login: str, password: str):
     usuario = db.query(Usuario).filter(Usuario.login == login).first()
     if not usuario:
         return None
+    if usuario.ativo is False:
+        return None
     if not verify_password(password, usuario.senha_hash):
         return None
     return usuario
@@ -69,6 +71,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
 
     usuario = db.query(Usuario).filter(Usuario.id_usuario == int(user_id)).first()
-    if usuario is None:
+    if usuario is None or usuario.ativo is False:
         raise credentials_exception
     return usuario

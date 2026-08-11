@@ -1,4 +1,13 @@
-from sqlalchemy import CheckConstraint, Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 
 from app.database import Base
 
@@ -8,6 +17,7 @@ class NotaFiscal(Base):
 
     __table_args__ = (
         CheckConstraint("valor_total > 0", name="ck_nota_fiscal_valor_positivo"),
+        UniqueConstraint("id_pedido", name="uq_nota_fiscal_id_pedido"),
     )
 
     id_nota = Column(Integer, primary_key=True)

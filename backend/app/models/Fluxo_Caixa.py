@@ -25,6 +25,7 @@ class FluxoCaixa(Base):
     id_lancamento = Column(Integer, primary_key=True)
     id_conta_pagar = Column(Integer, ForeignKey("conta_pagar.id_conta_pagar"), nullable=True)
     id_conta_receber = Column(Integer, ForeignKey("conta_receber.id_conta_receber"), nullable=True)
+    id_usuario = Column(Integer, ForeignKey("usuario.id_usuario"), nullable=True)
     tipo_lancamento = Column(String, nullable=False)
     valor = Column(Float, nullable=False)
     data_confirmacao = Column(DateTime, nullable=False)
